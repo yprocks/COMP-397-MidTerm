@@ -5,7 +5,7 @@ module objects {
     private ySpawn: number;
     private angle: number;
     private _player: objects.Plane;
-
+    private _image: createjs.Bitmap;
     // PUBLIC PROPERTIES
 
     // CONSTRUCTORS
@@ -13,7 +13,6 @@ module objects {
       super("enemy");
       this.i = Math.random() * - 20;
       this._player = player;
-
 
       this.Start();
     }
@@ -62,8 +61,8 @@ module objects {
 
       var magnitude: number = Math.sqrt(_dx * _dx + _dy * _dy);
 
-      this.x += _dx / magnitude;
-      this.y += _dy / magnitude;
+      this.x += _dx / magnitude * 0.7;
+      this.y += _dy / magnitude * 0.7;
 
       var direction = Math.atan2(_dy, _dx) * (180 / Math.PI) + 90;
       this.rotation = direction;

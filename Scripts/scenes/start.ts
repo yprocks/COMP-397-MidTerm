@@ -26,7 +26,7 @@ module scenes {
     // PUBLIC METHODS
     public Start():void {
       console.log("Start Scene");
-      this._startLabel = new objects.Label("Start Scene", "60px", "Consolas", config.Color.BLACK, config.Screen.HALF_WIDTH, config.Screen.HALF_HEIGHT, true);
+      this._startLabel = new objects.Label("Start Scene", "60px", "Consolas", config.Color.WHITE, config.Screen.HALF_WIDTH, config.Screen.HALF_HEIGHT, true);
       this._startButton = new objects.Button("startButton", config.Screen.HALF_WIDTH, config.Screen.HALF_HEIGHT + 70, true);
 
       this.Main();
@@ -37,6 +37,8 @@ module scenes {
     }
 
     public Main():void {
+      var image = new createjs.Bitmap("./Assets/images/start.jpg");
+      this.addChild(image);
       this.addChild(this._startLabel);
       this.addChild(this._startButton);
 

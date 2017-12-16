@@ -14,6 +14,10 @@ module scenes {
     private _bullets: objects.P_Bullet[];
     private _bulletNum: number;
     private _bulletCounter: number;
+  
+    private _scoreLabel: objects.Label;
+    
+        private _score: number;
 
     //CONSTRUCTORS
     constructor(currentScene: number) {
@@ -39,7 +43,7 @@ module scenes {
     public Start():void {
       // this._playLabel = new objects.Label("Play Scene", "60px", "Consolas", config.Color.BLACK, config.Screen.HALF_WIDTH, config.Screen.HALF_HEIGHT, true);
       // this._nextButton = new objects.Button("nextButton", config.Screen.HALF_WIDTH, config.Screen.HALF_HEIGHT + 70, true);
-
+  
       this._player = new objects.Plane();
 
       // uncomment the next line to enable gamepad support
@@ -54,6 +58,8 @@ module scenes {
       this._bullets = new Array<objects.P_Bullet>();
       this._bulletCounter = 0;
     
+      this._score = 0;
+      this._scoreLabel = new objects.Label("Score: " + this._score, "26px", "orecrusher3d", "#FFF", 400, 10, false);
       this.Main();
     }
 
@@ -75,12 +81,22 @@ module scenes {
         bullet._checkCollision(this._enemies);
       });
 
+      if(this._score >= 1000){
+        this._currentScene = config.Scene.END;
+        
+         window.removeEventListener("mousedown", this._bulletFire);
+         this.removeAllChildren();
+      }
+
       return this._currentScene;
     }
 
     public Main():void {
       // this.addChild(this._playLabel);
       // this.addChild(this._nextButton);
+      
+      var image = new createjs.Bitmap("./Assets/images/bg.png");
+      this.addChild(image);
 
       for (let count = 0; count < this._bulletNum; count++) {
         this._bullets[count] = new objects.P_Bullet(this);
@@ -93,6 +109,7 @@ module scenes {
       }
 
       this.addChild(this._player);      
+      this.addChild(this._scoreLabel);
       
       // this._nextButton.on("click", this._nextButtonClick);
       window.addEventListener("mousedown", this._bulletFire);      
@@ -113,8 +130,8 @@ module scenes {
       this._bullets[this._bulletCounter].xSpeed = _dx / magnitude * 4;
       this._bullets[this._bulletCounter].ySpeed = _dy / magnitude * 4;
       
-      // var instance = createjs.Sound.play("bullet");
-      // instance.volume = 0.5;
+      var instance = createjs.Sound.play("./Assets/audio/turboblaster1.mp3");
+      instance.volume = 0.5;
 
       this._bulletCounter++;
       console.log(this._bulletCounter);
@@ -132,28 +149,31 @@ module scenes {
       if ((Math.sqrt(Math.pow(P2.x - P1.x, 2) + Math.pow(P2.y - P1.y, 2))) <
         (this._player.halfHeight + other.halfHeight)) {
         if (!other.isColliding) {
-          if (other.name == "island") {
-            // this._score += 100;
-            // this._scoreLabel.text = "Score: " + this._score;
-            var instance = createjs.Sound.play("explosion");
-            instance.volume = 0.5;
-          }
+          // if (other.name == "island") {
+          //   this._score += 100;
+          //   this._scoreLabel.text = "Score: " + this._score;
+          //   var instance = createjs.Sound.play("explosion");
+          //   instance.volume = 0.5;
+          // }
 
-          if (other.name == "cloud") {
+          if (other.name == "enemy") {
             //this._lives -= 1;
 
             // if (this._lives <= 0) {
             //   this._currentScene = config.END;
             //   this._gameMusic.stop();
-            //   window.removeEventListener("mousedown", this._bulletFire);
-            //   this.removeAllChildren();
-            // }
-            var instance = createjs.Sound.play("explosion");
-            instance.volume = 0.5;
-            // this._livesLabel.text = "Lives: " + this._lives;
 
             var enemy = other as objects.Enemy;
             enemy.destroy();
+            this._currentScene = config.Scene.END;
+           
+            window.removeEventListener("mousedown", this._bulletFire);
+            this.removeAllChildren();
+            // }
+            // var instance = createjs.Sound.play("explosion");
+            // instance.volume = 0.5;
+            // this._livesLabel.text = "Lives: " + this._lives;
+
             // this.createExplosion(this._plane.x, this._plane.y);
           }
           
@@ -163,6 +183,11 @@ module scenes {
         other.isColliding = false;
       }
 
+    }
+
+    public UpdateScore(score: number): void {
+      this._score += 100;
+      this._scoreLabel.text = "Score: " + this._score;
     }
   }
 }

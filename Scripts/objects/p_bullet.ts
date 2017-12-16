@@ -10,6 +10,7 @@ module objects {
         // CONSTRUCTORS
         constructor(playScript: scenes.Play) {
           super("bullet");
+          
           this._playScript = playScript;
           this.Start();
         }
@@ -54,7 +55,7 @@ module objects {
             if ((Math.sqrt(Math.pow(P2.x - P1.x, 2) + Math.pow(P2.y - P1.y, 2))) <
               (this.halfHeight + enemy.halfHeight)) {
     
-              //this._playScript.UpdateScore(100);
+              this._playScript.UpdateScore(100);
               // var instance = createjs.Sound.play("explosion");
               // instance.volume = 0.5;
             

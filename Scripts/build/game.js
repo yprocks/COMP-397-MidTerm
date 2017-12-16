@@ -187,9 +187,10 @@ var managers;
         { id: "nextButton", src: "./Assets/images/nextButton.png" },
         { id: "restartButton", src: "./Assets/images/restartButton.png" },
         { id: "startButton", src: "./Assets/images/startButton.png" },
-        { id: "plane", src: "./Assets/images/xwing.png" },
+        { id: "plane", src: "./Assets/images/ship.png" },
+        { id: "bg", src: "./Assets/images/bg.png" },
         { id: "bullet", src: "./Assets/images/bullet.png" },
-        { id: "enemy", src: "./Assets/images/milleniumFalcon.png" }
+        { id: "enemy", src: "./Assets/images/enemy.png" }
     ];
     var AssetManager = /** @class */ (function (_super) {
         __extends(AssetManager, _super);
@@ -535,7 +536,7 @@ var objects;
                 var P2 = enemy.position;
                 if ((Math.sqrt(Math.pow(P2.x - P1.x, 2) + Math.pow(P2.y - P1.y, 2))) <
                     (_this.halfHeight + enemy.halfHeight)) {
-                    //this._playScript.UpdateScore(100);
+                    _this._playScript.UpdateScore(100);
                     // var instance = createjs.Sound.play("explosion");
                     // instance.volume = 0.5;
                     var x = enemy.position.x;
@@ -595,8 +596,8 @@ var objects;
             var _dx = this._player.x - this.x;
             var _dy = this._player.y - this.y;
             var magnitude = Math.sqrt(_dx * _dx + _dy * _dy);
-            this.x += _dx / magnitude;
-            this.y += _dy / magnitude;
+            this.x += _dx / magnitude * 0.7;
+            this.y += _dy / magnitude * 0.7;
             var direction = Math.atan2(_dy, _dx) * (180 / Math.PI) + 90;
             this.rotation = direction;
             this.position.x = this.x;
@@ -719,7 +720,7 @@ var scenes;
         };
         // PUBLIC METHODS
         End.prototype.Start = function () {
-            this._startLabel = new objects.Label("End Scene", "60px", "Consolas", config.Color.BLACK, config.Screen.HALF_WIDTH, config.Screen.HALF_HEIGHT, true);
+            this._startLabel = new objects.Label("End Scene", "60px", "Consolas", config.Color.WHITE, config.Screen.HALF_WIDTH, config.Screen.HALF_HEIGHT, true);
             this._backButton = new objects.Button("backButton", config.Screen.HALF_WIDTH, config.Screen.HALF_HEIGHT + 70, true);
             this.Main();
         };
@@ -727,6 +728,8 @@ var scenes;
             return this._currentScene;
         };
         End.prototype.Main = function () {
+            var image = new createjs.Bitmap("./Assets/images/start.jpg");
+            this.addChild(image);
             this.addChild(this._startLabel);
             this.addChild(this._backButton);
             this._backButton.on("click", this._backButtonClick);
@@ -768,6 +771,8 @@ var scenes;
             this._bulletNum = 50;
             this._bullets = new Array();
             this._bulletCounter = 0;
+            this._score = 0;
+            this._scoreLabel = new objects.Label("Score: " + this._score, "26px", "orecrusher3d", "#FFF", 400, 10, false);
             this.Main();
         };
         Play.prototype.Update = function () {
@@ -785,11 +790,18 @@ var scenes;
                 bullet.Update();
                 bullet._checkCollision(_this._enemies);
             });
+            if (this._score >= 1000) {
+                this._currentScene = config.Scene.END;
+                window.removeEventListener("mousedown", this._bulletFire);
+                this.removeAllChildren();
+            }
             return this._currentScene;
         };
         Play.prototype.Main = function () {
             // this.addChild(this._playLabel);
             // this.addChild(this._nextButton);
+            var image = new createjs.Bitmap("./Assets/images/bg.png");
+            this.addChild(image);
             for (var count = 0; count < this._bulletNum; count++) {
                 this._bullets[count] = new objects.P_Bullet(this);
                 this.addChild(this._bullets[count]);
@@ -799,6 +811,7 @@ var scenes;
                 this.addChild(this._enemies[count]);
             }
             this.addChild(this._player);
+            this.addChild(this._scoreLabel);
             // this._nextButton.on("click", this._nextButtonClick);
             window.addEventListener("mousedown", this._bulletFire);
         };
@@ -811,8 +824,8 @@ var scenes;
             var magnitude = Math.sqrt(_dx * _dx + _dy * _dy);
             this._bullets[this._bulletCounter].xSpeed = _dx / magnitude * 4;
             this._bullets[this._bulletCounter].ySpeed = _dy / magnitude * 4;
-            // var instance = createjs.Sound.play("bullet");
-            // instance.volume = 0.5;
+            var instance = createjs.Sound.play("./Assets/audio/turboblaster1.mp3");
+            instance.volume = 0.5;
             this._bulletCounter++;
             console.log(this._bulletCounter);
             if (this._bulletCounter >= this._bulletNum - 1) {
@@ -826,25 +839,26 @@ var scenes;
             if ((Math.sqrt(Math.pow(P2.x - P1.x, 2) + Math.pow(P2.y - P1.y, 2))) <
                 (this._player.halfHeight + other.halfHeight)) {
                 if (!other.isColliding) {
-                    if (other.name == "island") {
-                        // this._score += 100;
-                        // this._scoreLabel.text = "Score: " + this._score;
-                        var instance = createjs.Sound.play("explosion");
-                        instance.volume = 0.5;
-                    }
-                    if (other.name == "cloud") {
+                    // if (other.name == "island") {
+                    //   this._score += 100;
+                    //   this._scoreLabel.text = "Score: " + this._score;
+                    //   var instance = createjs.Sound.play("explosion");
+                    //   instance.volume = 0.5;
+                    // }
+                    if (other.name == "enemy") {
                         //this._lives -= 1;
                         // if (this._lives <= 0) {
                         //   this._currentScene = config.END;
                         //   this._gameMusic.stop();
-                        //   window.removeEventListener("mousedown", this._bulletFire);
-                        //   this.removeAllChildren();
-                        // }
-                        var instance = createjs.Sound.play("explosion");
-                        instance.volume = 0.5;
-                        // this._livesLabel.text = "Lives: " + this._lives;
                         var enemy = other;
                         enemy.destroy();
+                        this._currentScene = config.Scene.END;
+                        window.removeEventListener("mousedown", this._bulletFire);
+                        this.removeAllChildren();
+                        // }
+                        // var instance = createjs.Sound.play("explosion");
+                        // instance.volume = 0.5;
+                        // this._livesLabel.text = "Lives: " + this._lives;
                         // this.createExplosion(this._plane.x, this._plane.y);
                     }
                     other.isColliding = true;
@@ -853,6 +867,10 @@ var scenes;
             else {
                 other.isColliding = false;
             }
+        };
+        Play.prototype.UpdateScore = function (score) {
+            this._score += 100;
+            this._scoreLabel.text = "Score: " + this._score;
         };
         return Play;
     }(objects.Scene));
@@ -879,7 +897,7 @@ var scenes;
         // PUBLIC METHODS
         Start.prototype.Start = function () {
             console.log("Start Scene");
-            this._startLabel = new objects.Label("Start Scene", "60px", "Consolas", config.Color.BLACK, config.Screen.HALF_WIDTH, config.Screen.HALF_HEIGHT, true);
+            this._startLabel = new objects.Label("Start Scene", "60px", "Consolas", config.Color.WHITE, config.Screen.HALF_WIDTH, config.Screen.HALF_HEIGHT, true);
             this._startButton = new objects.Button("startButton", config.Screen.HALF_WIDTH, config.Screen.HALF_HEIGHT + 70, true);
             this.Main();
         };
@@ -887,6 +905,8 @@ var scenes;
             return this._currentScene;
         };
         Start.prototype.Main = function () {
+            var image = new createjs.Bitmap("./Assets/images/start.jpg");
+            this.addChild(image);
             this.addChild(this._startLabel);
             this.addChild(this._startButton);
             this._startButton.on("click", this._startButtonClick);
